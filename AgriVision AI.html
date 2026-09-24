@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriVision AI - Next-Gen Crop Health & Disease Diagnostic Engine</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Agro-Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            900: '#064e3b',
+                            950: '#022c22'
+                        },
+                        agro: {
+                            dark: '#030d09',
+                            card: 'rgba(8, 28, 21, 0.75)',
+                            border: 'rgba(52, 211, 153, 0.2)',
+                            accent: '#10b981'
+                        }
+                    },
+                    animation: {
+                        'scan-line': 'scan 2.5s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 2s infinite alternate',
+                        'float': 'float 6s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%, 100%': { top: '0%' },
+                            '50%': { top: '95%' }
+                        },
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)' },
+                            '100%': { boxShadow: '0 0 35px rgba(16, 185, 129, 0.6)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #030d09;
+            color: #e2e8f0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(6, 26, 19, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(52, 211, 153, 0.18);
+        }
+        .glass-panel-hover:hover {
+            border-color: rgba(52, 211, 153, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(10, 253, 160, 0.1);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030d09;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #059669;
+            border-radius: 4px;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-black">
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-emerald-900/40 px-4 lg:px-8 py-3.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/30 text-emerald-400 animate-pulse-glow">
+                    <i data-lucide="sprout" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl font-extrabold tracking-wider bg-gradient-to-r from-emerald-400 via-teal-300 to-green-500 bg-clip-text text-transparent">AGRIVISION AI</span>
+                        <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 uppercase tracking-widest">v4.2 Live</span>
+                    </div>
+                    <p class="text-xs text-slate-400 hidden sm:block">IEEE Ignite Project Showcase • Kalasalingam University</p>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="#scanner" class="hover:text-emerald-400 transition-colors flex items-center gap-1.5"><i data-lucide="scan-line" class="w-4 h-4 text-emerald-400"></i> Scanner</a>
+                <a href="#iot-dashboard" class="hover:text-emerald-400 transition-colors flex items-center gap-1.5"><i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i> Telemetry</a>
+                <a href="#farm-map" class="hover:text-emerald-400 transition-colors flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4 text-emerald-400"></i> Field Radar</a>
+                <a href="#agronomics" class="hover:text-emerald-400 transition-colors flex items-center gap-1.5"><i data-lucide="bot" class="w-4 h-4 text-emerald-400"></i> AI Agronomist</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <button onclick="exportPDFReport()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-950/50 hover:scale-105 active:scale-95">
+                    <i data-lucide="file-down" class="w-4 h-4"></i>
+                    <span>Export Report</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="relative px-4 pt-8 pb-6 max-w-7xl mx-auto w-full">
+        <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="glass-panel rounded-3xl p-6 lg:p-8 relative overflow-hidden border border-emerald-500/30">
+            <div class="absolute top-0 right-0 p-8 opacity-10 pointer-events-none text-emerald-400">
+                <i data-lucide="cpu" class="w-72 h-72"></i>
+            </div>
+
+            <div class="max-w-3xl space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Deep Neural Network Diagnostics Active • 98.6% Accuracy
+                </div>
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-100 tracking-tight leading-tight">
+                    Precision Diagnostics & <span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Crop Pathology AI</span>
+                </h1>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    Instantly identify plant pathogens, leaf chlorosis, and insect damage using multi-spectral computer vision. Integrated with live micro-climate IoT analytics for preventive field protection.
+                </p>
+                <div class="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-400">
+                    <div class="flex items-center gap-1.5"><i data-lucide="check-circle2" class="w-4 h-4 text-emerald-400"></i> Real-Time Optical Scanning</div>
+                    <div class="flex items-center gap-1.5"><i data-lucide="check-circle2" class="w-4 h-4 text-emerald-400"></i> Organic & Chemical Treatment Pathways</div>
+                    <div class="flex items-center gap-1.5"><i data-lucide="check-circle2" class="w-4 h-4 text-emerald-400"></i> Outbreak Risk Predictive Radar</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Interactive Workspace -->
+    <main class="max-w-7xl mx-auto w-full px-4 py-4 space-y-8 flex-1">
+        
+        <!-- SECTION 1: LIVE DIAGNOSTIC SCANNER -->
+        <section id="scanner" class="scroll-mt-20">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left: Upload & Presets Area (5 cols) -->
+                <div class="lg:col-span-5 flex flex-col gap-5">
+                    <div class="glass-panel rounded-2xl p-5 border border-emerald-500/20 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                                <i data-lucide="camera" class="w-5 h-5 text-emerald-400"></i> Leaf Diagnostic Chamber
+                            </h2>
+                            <span class="text-xs text-emerald-400 font-mono">MODEL: ResNet-50-Agro</span>
+                        </div>
+
+                        <!-- Dropzone & Preview Box -->
+                        <div id="dropzone" class="relative group cursor-pointer border-2 border-dashed border-emerald-500/40 hover:border-emerald-400 rounded-xl bg-slate-950/60 transition-all p-6 text-center flex flex-col items-center justify-center min-h-[280px] overflow-hidden">
+                            
+                            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+
+                            <!-- Image Container -->
+                            <div id="imageContainer" class="hidden relative w-full h-64 rounded-lg overflow-hidden flex items-center justify-center bg-black/40">
+                                <img id="previewImage" src="" alt="Crop Sample" class="w-full h-full object-contain">
+                                <!-- Laser Line -->
+                                <div id="scanLaser" class="hidden absolute inset-x-0 h-1 bg-emerald-400 shadow-[0_0_15px_#34d399] z-20 animate-scan-line"></div>
+                                <!-- Overlay Grid -->
+                                <div id="scanGrid" class="hidden absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] opacity-25"></div>
+                            </div>
+
+                            <!-- Default Prompt View -->
+                            <div id="uploadPrompt" class="space-y-3 flex flex-col items-center">
+                                <div class="p-4 bg-emerald-500/10 rounded-full text-emerald-400 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-200">Drag & Drop Leaf Photo Here</p>
+                                    <p class="text-xs text-slate-400 mt-1">Supports JPG, PNG, WEBP up to 10MB</p>
+                                </div>
+                                <button type="button" onclick="document.getElementById('fileInput').click()" class="px-4 py-1.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-semibold rounded-lg transition-colors">
+                                    Browse Local Files
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Preset Quick Select Buttons for Fast Expo Demonstrations -->
+                        <div class="space-y-2">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-400"></i> Or Select Sample Preset for Instant Demo:
+                            </p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="loadPreset('tomato')" class="p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/20 text-left transition-all hover:scale-[1.02] flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-200">Tomato Late Blight</p>
+                                        <p class="text-[10px] text-slate-400">Fungal Pathogen</p>
+                                    </div>
+                                </button>
+                                <button onclick="loadPreset('apple')" class="p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/20 text-left transition-all hover:scale-[1.02] flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-200">Apple Black Rot</p>
+                                        <p class="text-[10px] text-slate-400">Necrotic Lesion</p>
+                                    </div>
+                                </button>
+                                <button onclick="loadPreset('corn')" class="p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/20 text-left transition-all hover:scale-[1.02] flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-200">Corn Leaf Blight</p>
+                                        <p class="text-[10px] text-slate-400">Bacterial Infection</p>
+                                    </div>
+                                </button>
+                                <button onclick="loadPreset('healthy')" class="p-2.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/20 text-left transition-all hover:scale-[1.02] flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-200">Healthy Cotton</p>
+                                        <p class="text-[10px] text-slate-400">Optimum Chlorophyll</p>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Button -->
+                        <button id="scanBtn" onclick="runDiagnosis()" disabled class="w-full py-3 bg-slate-800 text-slate-500 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-not-allowed">
+                            <i data-lucide="scan" class="w-4 h-4"></i>
+                            <span>Select an Image First</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: AI Diagnosis Results (7 cols) -->
+                <div class="lg:col-span-7 flex flex-col">
+                    <div id="diagnosticResults" class="glass-panel rounded-2xl p-6 border border-emerald-500/20 flex-1 flex flex-col justify-between">
+                        
+                        <!-- Placeholder State -->
+                        <div id="resultsPlaceholder" class="h-full flex flex-col items-center justify-center py-16 text-center space-y-3">
+                            <div class="p-4 rounded-full bg-emerald-500/5 text-emerald-400/40">
+                                <i data-lucide="microscope" class="w-16 h-16"></i>
+                            </div>
+                            <h3 class="text-base font-semibold text-slate-300">Awaiting Sample Input</h3>
+                            <p class="text-xs text-slate-500 max-w-sm">
+                                Select a preset or upload a leaf photograph to initialize deep neural network feature extraction and pathogen identification.
+                            </p>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="resultsLoading" class="hidden h-full flex flex-col items-center justify-center py-16 text-center space-y-4">
+                            <div class="relative flex items-center justify-center">
+                                <div class="w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin"></div>
+                                <i data-lucide="cpu" class="w-6 h-6 text-emerald-400 absolute"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-emerald-400">Analyzing Cell Structure...</h3>
+                                <p class="text-xs text-slate-400 mt-1 font-mono">Running Inference: ResNet-50 Convolutional Layers</p>
+                            </div>
+                        </div>
+
+                        <!-- Active Report Output View -->
+                        <div id="resultsActive" class="hidden space-y-6">
+                            
+                            <!-- Header & Badges -->
+                            <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-emerald-900/50">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span id="cropNameBadge" class="px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold text-xs border border-emerald-500/30">Tomato (Solanum lycopersicum)</span>
+                                        <span id="severityBadge" class="px-2.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold text-xs border border-red-500/30 flex items-center gap-1">
+                                            <i data-lucide="alert-triangle" class="w-3 h-3"></i> CRITICAL SEVERITY
+                                        </span>
+                                    </div>
+                                    <h2 id="diseaseTitle" class="text-2xl font-black text-slate-100 mt-2">Tomato Late Blight</h2>
+                                    <p id="pathogenType" class="text-xs text-slate-400 font-mono mt-0.5">Pathogen: Phytophthora infestans (Oomycete)</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-xs text-slate-400 block">AI Confidence Score</span>
+                                    <span id="confidenceScore" class="text-3xl font-black text-emerald-400">97.8%</span>
+                                </div>
+                            </div>
+
+                            <!-- Diagnostic Metrics Bar -->
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="p-3 bg-slate-950/60 rounded-xl border border-emerald-500/10">
+                                    <span class="text-[11px] text-slate-400 block">Health Index</span>
+                                    <span id="healthIndexVal" class="text-lg font-bold text-red-400">32/100</span>
+                                </div>
+                                <div class="p-3 bg-slate-950/60 rounded-xl border border-emerald-500/10">
+                                    <span class="text-[11px] text-slate-400 block">Affected Area</span>
+                                    <span id="affectedAreaVal" class="text-lg font-bold text-amber-400">42% Tissue</span>
+                                </div>
+                                <div class="p-3 bg-slate-950/60 rounded-xl border border-emerald-500/10">
+                                    <span class="text-[11px] text-slate-400 block">Spread Speed</span>
+                                    <span id="spreadSpeedVal" class="text-lg font-bold text-red-400">Rapid (24-48 hrs)</span>
+                                </div>
+                            </div>
+
+                            <!-- Pathology Description -->
+                            <div class="space-y-1.5">
+                                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Pathology Summary</h4>
+                                <p id="pathologySummary" class="text-xs text-slate-300 leading-relaxed bg-slate-950/40 p-3 rounded-lg border border-slate-800">
+                                    Water-soaked dark lesions appeared on leaves with white fungal growth on undersides during high moisture conditions. Immediate containment protocol required to protect adjacent healthy crop rows.
+                                </p>
+                            </div>
+
+                            <!-- Actionable Remediation Steps -->
+                            <div class="space-y-3">
+                                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="shield-alert" class="w-4 h-4"></i> Prescribed Remediation Plan
+                                </h4>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <!-- Chemical Treatment -->
+                                    <div class="p-3 bg-emerald-950/20 rounded-xl border border-emerald-500/20 space-y-1">
+                                        <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+                                            <i data-lucide="flask-conical" class="w-3.5 h-3.5 text-emerald-400"></i> Chemical Spray
+                                        </div>
+                                        <p id="chemTreatment" class="text-xs text-slate-300">Apply Copper-based fungicide or Mancozeb @ 2.5g/L water every 7 days.</p>
+                                    </div>
+
+                                    <!-- Organic Treatment -->
+                                    <div class="p-3 bg-emerald-950/20 rounded-xl border border-emerald-500/20 space-y-1">
+                                        <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+                                            <i data-lucide="leaf" class="w-3.5 h-3.5 text-emerald-400"></i> Bio-Organic Control
+                                        </div>
+                                        <p id="organicTreatment" class="text-xs text-slate-300">Spray Trichoderma viride bio-fungicide solution; prune infected lower leaves immediately.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: REAL-TIME IOT SENSOR SIMULATION -->
+        <section id="iot-dashboard" class="scroll-mt-20">
+            <div class="glass-panel rounded-2xl p-6 border border-emerald-500/20 space-y-6">
+                
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-emerald-900/50 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="radio" class="w-5 h-5 text-emerald-400"></i> IoT Environmental Telemetry & Outbreak Predictor
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Adjust climate parameters to simulate live field vulnerability & spore germination risk.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-xs font-mono text-emerald-400">LoRaWAN Sensor Mesh Connected</span>
+                    </div>
+                </div>
+
+                <!-- Sliders Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    
+                    <!-- Soil Moisture -->
+                    <div class="p-4 bg-slate-950/70 rounded-xl border border-emerald-500/15 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-semibold flex items-center gap-1"><i data-lucide="droplets" class="w-3.5 h-3.5 text-blue-400"></i> Soil Moisture</span>
+                            <span id="valSoil" class="font-mono text-emerald-400 font-bold">78%</span>
+                        </div>
+                        <input type="range" id="sliderSoil" min="10" max="100" value="78" oninput="updateTelemetry()" class="w-full accent-emerald-400 bg-slate-800 rounded-lg h-1.5 cursor-pointer">
+                        <p class="text-[10px] text-slate-500">Optimal Range: 50% - 70%</p>
+                    </div>
+
+                    <!-- Temperature -->
+                    <div class="p-4 bg-slate-950/70 rounded-xl border border-emerald-500/15 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-semibold flex items-center gap-1"><i data-lucide="thermometer" class="w-3.5 h-3.5 text-amber-400"></i> Ambient Temp</span>
+                            <span id="valTemp" class="font-mono text-emerald-400 font-bold">28.5°C</span>
+                        </div>
+                        <input type="range" id="sliderTemp" min="10" max="45" value="28" oninput="updateTelemetry()" class="w-full accent-emerald-400 bg-slate-800 rounded-lg h-1.5 cursor-pointer">
+                        <p class="text-[10px] text-slate-500">Spore Risk Peak: 22°C - 30°C</p>
+                    </div>
+
+                    <!-- Air Humidity -->
+                    <div class="p-4 bg-slate-950/70 rounded-xl border border-emerald-500/15 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-semibold flex items-center gap-1"><i data-lucide="cloud-rain" class="w-3.5 h-3.5 text-teal-400"></i> Air Humidity</span>
+                            <span id="valHum" class="font-mono text-emerald-400 font-bold">88%</span>
+                        </div>
+                        <input type="range" id="sliderHum" min="20" max="100" value="88" oninput="updateTelemetry()" class="w-full accent-emerald-400 bg-slate-800 rounded-lg h-1.5 cursor-pointer">
+                        <p class="text-[10px] text-slate-500">Fungal Threat High > 80%</p>
+                    </div>
+
+                    <!-- Leaf Wetness -->
+                    <div class="p-4 bg-slate-950/70 rounded-xl border border-emerald-500/15 space-y-2">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-semibold flex items-center gap-1"><i data-lucide="cloud-drizzle" class="w-3.5 h-3.5 text-indigo-400"></i> Leaf Wetness</span>
+                            <span id="valLeaf" class="font-mono text-emerald-400 font-bold">9.2 hrs</span>
+                        </div>
+                        <input type="range" id="sliderLeaf" min="0" max="24" value="9" oninput="updateTelemetry()" class="w-full accent-emerald-400 bg-slate-800 rounded-lg h-1.5 cursor-pointer">
+                        <p class="text-[10px] text-slate-500">Critical Infection Threshold > 8 hrs</p>
+                    </div>
+
+                </div>
+
+                <!-- Combined Outbreak Risk Alert Bar -->
+                <div class="p-4 rounded-xl bg-slate-950/80 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div id="riskIconBg" class="p-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30">
+                            <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block">Dynamic Outbreak Vulnerability Level</span>
+                            <h4 id="outbreakRiskText" class="text-lg font-black text-red-400">HIGH FUNGAL OUTBREAK RISK (87%)</h4>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-300 max-w-md">
+                            High leaf wetness duration combined with 88% air humidity creates prime micro-climatic conditions for rapid spore multiplication.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 3: FIELD GIS MAP & OUTBREAK RADAR -->
+        <section id="farm-map" class="scroll-mt-20">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- GIS Map Visualizer (8 cols) -->
+                <div class="lg:col-span-8 glass-panel rounded-2xl p-6 border border-emerald-500/20 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="map" class="w-5 h-5 text-emerald-400"></i> Smart Farm Sector GIS Health Radar
+                        </h2>
+                        <span class="text-xs text-slate-400 font-mono">LOCATION: Kalasalingam Research Plot #4</span>
+                    </div>
+
+                    <!-- Simulated GIS Field Plot Grid -->
+                    <div class="relative w-full h-80 bg-slate-950 rounded-xl overflow-hidden border border-emerald-500/30 p-4 grid grid-cols-3 gap-3">
+                        <!-- Radar Sweep Line -->
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(3,13,9,0.8)_100%)] pointer-events-none z-10"></div>
+                        
+                        <!-- Zone A -->
+                        <div class="relative bg-emerald-950/40 rounded-lg p-3 border border-emerald-500/40 hover:bg-emerald-900/40 transition-colors flex flex-col justify-between cursor-pointer" onclick="selectFieldZone('Zone A (North Plot)', 'Healthy', '96% Crop Vigour')">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-emerald-300">Zone A</span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                            </div>
+                            <div class="text-center my-2">
+                                <i data-lucide="wheat" class="w-8 h-8 text-emerald-400/60 mx-auto"></i>
+                                <span class="text-[11px] text-emerald-300 font-semibold block mt-1">Wheat Plot</span>
+                            </div>
+                            <span class="text-[10px] text-emerald-400 font-mono bg-emerald-950/80 px-1.5 py-0.5 rounded text-center">Status: Optimal</span>
+                        </div>
+
+                        <!-- Zone B (Infected Hotspot) -->
+                        <div class="relative bg-red-950/40 rounded-lg p-3 border border-red-500/60 hover:bg-red-900/40 transition-colors flex flex-col justify-between cursor-pointer animate-pulse-glow" onclick="selectFieldZone('Zone B (East Plot)', 'Infected - Late Blight', 'Critical Risk Hotspot')">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-red-300">Zone B</span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+                            </div>
+                            <div class="text-center my-2">
+                                <i data-lucide="biohazard" class="w-8 h-8 text-red-400 mx-auto"></i>
+                                <span class="text-[11px] text-red-300 font-semibold block mt-1">Tomato Plot</span>
+                            </div>
+                            <span class="text-[10px] text-red-400 font-mono bg-red-950/80 px-1.5 py-0.5 rounded text-center">Late Blight Active</span>
+                        </div>
+
+                        <!-- Zone C -->
+                        <div class="relative bg-amber-950/40 rounded-lg p-3 border border-amber-500/40 hover:bg-amber-900/40 transition-colors flex flex-col justify-between cursor-pointer" onclick="selectFieldZone('Zone C (South Plot)', 'Moderate Risk', '82% Vigour')">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold text-amber-300">Zone C</span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                            </div>
+                            <div class="text-center my-2">
+                                <i data-lucide="sprout" class="w-8 h-8 text-amber-400/60 mx-auto"></i>
+                                <span class="text-[11px] text-amber-300 font-semibold block mt-1">Corn Field</span>
+                            </div>
+                            <span class="text-[10px] text-amber-400 font-mono bg-amber-950/80 px-1.5 py-0.5 rounded text-center">Moisture High</span>
+                        </div>
+                    </div>
+
+                    <div id="zoneDetailText" class="p-3 bg-slate-950/60 rounded-xl text-xs text-slate-300 border border-slate-800">
+                        Select a plot sector above to inspect real-time NDVI satellite health values and outbreak status.
+                    </div>
+                </div>
+
+                <!-- Yield Analytics Chart (4 cols) -->
+                <div class="lg:col-span-4 glass-panel rounded-2xl p-6 border border-emerald-500/20 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> Yield Forecast Impact
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">Estimated crop yield loss without early treatment intervention.</p>
+                    </div>
+
+                    <div class="relative h-48 w-full flex items-center justify-center">
+                        <canvas id="yieldChart"></canvas>
+                    </div>
+
+                    <div class="p-3 bg-emerald-950/30 rounded-xl border border-emerald-500/20 text-center">
+                        <span class="text-[11px] text-slate-400 block">Early AI Detection Saves</span>
+                        <span class="text-xl font-black text-emerald-400">+38% Harvest Yield</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 4: AI AGRONOMIST CHATBOT ASSISTANT -->
+        <section id="agronomics" class="scroll-mt-20">
+            <div class="glass-panel rounded-2xl p-6 border border-emerald-500/20 space-y-4">
+                <div class="flex items-center justify-between border-b border-emerald-900/50 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-emerald-500/20 rounded-xl text-emerald-400 border border-emerald-500/30">
+                            <i data-lucide="bot" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100">AgriBot - AI Agronomist Voice & Chat Advisor</h2>
+                            <p class="text-xs text-slate-400">Ask natural language questions regarding crop treatment, dosage, or prevention.</p>
+                        </div>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 font-mono">LLM-Agro Connected</span>
+                </div>
+
+                <!-- Chat Messages Box -->
+                <div id="chatBox" class="h-64 overflow-y-auto bg-slate-950/80 rounded-xl p-4 border border-emerald-500/10 space-y-3 font-sans text-xs">
+                    
+                    <!-- Bot Message -->
+                    <div class="flex gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl rounded-tl-none max-w-xl text-slate-200 leading-relaxed">
+                            Hello! I am your AI Agronomist. Based on your current telemetry and diagnostic scans, how can I assist you with crop health management today?
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Chat Input Controls -->
+                <form onsubmit="handleChatSubmit(event)" class="flex gap-2">
+                    <input type="text" id="chatInput" placeholder="e.g. What is the organic remedy for Tomato Late Blight?" class="flex-1 bg-slate-950 border border-emerald-500/30 rounded-xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-400 transition-colors">
+                    <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-xs transition-colors flex items-center gap-1">
+                        <span>Send</span>
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-emerald-900/40 mt-12 py-6 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <div class="flex items-center gap-2">
+                <i data-lucide="sprout" class="w-4 h-4 text-emerald-400"></i>
+                <span>AgriVision AI © 2026 • Kalasalingam Academy Showcase</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>IEEE Ignite Project Submission</span>
+                <span>•</span>
+                <span>Track: Sustainability & Intelligence</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Sample Presets Dataset
+        const presets = {
+            tomato: {
+                title: "Tomato Late Blight",
+                crop: "Tomato (Solanum lycopersicum)",
+                pathogen: "Pathogen: Phytophthora infestans (Oomycete)",
+                severity: "CRITICAL SEVERITY",
+                severityClass: "bg-red-500/20 text-red-400 border-red-500/30",
+                confidence: "97.8%",
+                healthIndex: "32/100",
+                affectedArea: "42% Leaf Surface",
+                spreadSpeed: "Rapid (24-48 hrs)",
+                summary: "Water-soaked dark brown spots appearing on leaves with white spore fungal down on lower surfaces during high humidity periods. Requires rapid containment.",
+                chem: "Spray Copper Oxychloride @ 3g/L or Mancozeb 75% WP @ 2g/L water at 7-day intervals.",
+                organic: "Apply Neem Seed Kernel Extract (5%) or Trichoderma viride biological culture.",
+                img: "https://images.unsplash.com/photo-1592417817098-8f3d6eb1626d?auto=format&fit=crop&w=600&q=80"
+            },
+            apple: {
+                title: "Apple Black Rot",
+                crop: "Apple (Malus domestica)",
+                pathogen: "Pathogen: Botryosphaeria obtusa (Fungus)",
+                severity: "MODERATE SEVERITY",
+                severityClass: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+                confidence: "94.2%",
+                healthIndex: "58/100",
+                affectedArea: "24% Tissue",
+                spreadSpeed: "Moderate (3-5 days)",
+                summary: "Concentric rings forming purple-bordered frog-eye spots on leaf surfaces. Can cause dark decay in fruit clusters if untreated.",
+                chem: "Apply Captan 50 WP or Thiophanate-methyl systemic fungicide.",
+                organic: "Prune infected twigs and burn fallen infected leaf debris around orchard ground.",
+                img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80"
+            },
+            corn: {
+                title: "Corn Northern Leaf Blight",
+                crop: "Maize / Corn (Zea mays)",
+                pathogen: "Pathogen: Exserohilum turcicum",
+                severity: "HIGH SEVERITY",
+                severityClass: "bg-red-500/20 text-red-400 border-red-500/30",
+                confidence: "96.1%",
+                healthIndex: "45/100",
+                affectedArea: "35% Leaf Area",
+                spreadSpeed: "Fast (2-3 days)",
+                summary: "Long, elliptical grayish-green cigar-shaped lesions developing on leaves, severely limiting photosynthetic capability.",
+                chem: "Foliar application of Azoxystrobin or Propiconazole @ 1ml/L.",
+                organic: "Implement strict crop rotation with non-host legumes and apply Bacillus subtilis.",
+                img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=600&q=80"
+            },
+            healthy: {
+                title: "Healthy Cotton Crop",
+                crop: "Cotton (Gossypium hirsutum)",
+                pathogen: "Pathogen: None (Optimum Cellular Chlorophyll)",
+                severity: "OPTIMAL HEALTH",
+                severityClass: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+                confidence: "99.4%",
+                healthIndex: "98/100",
+                affectedArea: "0% Tissue",
+                spreadSpeed: "None",
+                summary: "Leaf tissue exhibits dark uniform green coloration, strong stomatal activity, and zero visible necrotic or fungal lesions.",
+                chem: "No chemical intervention needed. Maintain balanced N-P-K soil fertilization.",
+                organic: "Apply periodic bio-fertilizers (Azospirillum) to maintain vigor.",
+                img: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80"
+            }
+        };
+
+        let currentSelectedPreset = null;
+
+        // Load Preset Handler
+        function loadPreset(key) {
+            currentSelectedPreset = presets[key];
+            const dropzonePrompt = document.getElementById('uploadPrompt');
+            const imgContainer = document.getElementById('imageContainer');
+            const previewImg = document.getElementById('previewImage');
+            const scanBtn = document.getElementById('scanBtn');
+
+            previewImg.src = currentSelectedPreset.img;
+            dropzonePrompt.classList.add('hidden');
+            imgContainer.classList.remove('hidden');
+
+            // Enable Scan Button
+            scanBtn.disabled = false;
+            scanBtn.className = "w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/50";
+            scanBtn.innerHTML = `<i data-lucide="scan-line" class="w-4 h-4"></i><span>Run Neural AI Diagnosis</span>`;
+            lucide.createIcons();
+        }
+
+        // Handle File Drag / Upload
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentSelectedPreset = {
+                        title: "Custom Leaf Sample Analysis",
+                        crop: "Uploaded Plant Sample",
+                        pathogen: "Detected: Xanthomonas campestris",
+                        severity: "MODERATE SEVERITY",
+                        severityClass: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+                        confidence: "91.5%",
+                        healthIndex: "62/100",
+                        affectedArea: "18% Tissue",
+                        spreadSpeed: "Moderate",
+                        summary: "Chlorotic halo observed around dark brown angular spots. Likely bacterial leaf spot infection.",
+                        chem: "Apply Copper Hydroxide spray @ 2g/L.",
+                        organic: "Spray bio-fungicide Pseudomonas fluorescens.",
+                        img: e.target.result
+                    };
+                    
+                    document.getElementById('uploadPrompt').classList.add('hidden');
+                    document.getElementById('imageContainer').classList.remove('hidden');
+                    document.getElementById('previewImage').src = e.target.result;
+                    
+                    const scanBtn = document.getElementById('scanBtn');
+                    scanBtn.disabled = false;
+                    scanBtn.className = "w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/50";
+                    scanBtn.innerHTML = `<i data-lucide="scan-line" class="w-4 h-4"></i><span>Run Neural AI Diagnosis</span>`;
+                    lucide.createIcons();
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Run Diagnosis Routine
+        function runDiagnosis() {
+            if (!currentSelectedPreset) return;
+
+            const scanLaser = document.getElementById('scanLaser');
+            const scanGrid = document.getElementById('scanGrid');
+            const placeholder = document.getElementById('resultsPlaceholder');
+            const loading = document.getElementById('resultsLoading');
+            const activeResults = document.getElementById('resultsActive');
+
+            // Show Scanning Laser Line Effect
+            scanLaser.classList.remove('hidden');
+            scanGrid.classList.remove('hidden');
+
+            placeholder.classList.add('hidden');
+            activeResults.classList.add('hidden');
+            loading.classList.remove('hidden');
+
+            // Simulate AI Computation Delay
+            setTimeout(() => {
+                scanLaser.classList.add('hidden');
+                scanGrid.classList.add('hidden');
+                loading.classList.add('hidden');
+                activeResults.classList.remove('hidden');
+
+                // Populate Fields with Selected Data
+                document.getElementById('cropNameBadge').innerText = currentSelectedPreset.crop;
+                
+                const sevBadge = document.getElementById('severityBadge');
+                sevBadge.className = `px-2.5 py-0.5 rounded font-bold text-xs border flex items-center gap-1 ${currentSelectedPreset.severityClass}`;
+                sevBadge.innerText = currentSelectedPreset.severity;
+
+                document.getElementById('diseaseTitle').innerText = currentSelectedPreset.title;
+                document.getElementById('pathogenType').innerText = currentSelectedPreset.pathogen;
+                document.getElementById('confidenceScore').innerText = currentSelectedPreset.confidence;
+                document.getElementById('healthIndexVal').innerText = currentSelectedPreset.healthIndex;
+                document.getElementById('affectedAreaVal').innerText = currentSelectedPreset.affectedArea;
+                document.getElementById('spreadSpeedVal').innerText = currentSelectedPreset.spreadSpeed;
+                document.getElementById('pathologySummary').innerText = currentSelectedPreset.summary;
+                document.getElementById('chemTreatment').innerText = currentSelectedPreset.chem;
+                document.getElementById('organicTreatment').innerText = currentSelectedPreset.organic;
+
+                lucide.createIcons();
+            }, 2000);
+        }
+
+        // Update Telemetry Sliders
+        function updateTelemetry() {
+            const soil = document.getElementById('sliderSoil').value;
+            const temp = document.getElementById('sliderTemp').value;
+            const hum = document.getElementById('sliderHum').value;
+            const leaf = document.getElementById('sliderLeaf').value;
+
+            document.getElementById('valSoil').innerText = soil + '%';
+            document.getElementById('valTemp').innerText = temp + '°C';
+            document.getElementById('valHum').innerText = hum + '%';
+            document.getElementById('valLeaf').innerText = leaf + ' hrs';
+
+            // Calculate Dynamic Outbreak Score
+            let riskScore = Math.min(100, Math.round((hum * 0.4) + (leaf * 2.5) + (temp * 0.8)));
+            
+            const riskText = document.getElementById('outbreakRiskText');
+            const riskIconBg = document.getElementById('riskIconBg');
+
+            if (riskScore > 75) {
+                riskText.className = "text-lg font-black text-red-400";
+                riskText.innerText = `HIGH FUNGAL OUTBREAK RISK (${riskScore}%)`;
+                riskIconBg.className = "p-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30";
+            } else if (riskScore > 45) {
+                riskText.className = "text-lg font-black text-amber-400";
+                riskText.innerText = `MODERATE FUNGAL RISK (${riskScore}%)`;
+                riskIconBg.className = "p-3 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30";
+            } else {
+                riskText.className = "text-lg font-black text-emerald-400";
+                riskText.innerText = `LOW OUTBREAK RISK (${riskScore}%)`;
+                riskIconBg.className = "p-3 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+            }
+        }
+
+        // Select Field Zone GIS Handler
+        function selectFieldZone(zoneName, status, detail) {
+            document.getElementById('zoneDetailText').innerHTML = `
+                <strong class="text-emerald-400">${zoneName} Selected:</strong> Status: <span class="text-slate-100 font-semibold">${status}</span> — ${detail}. Telemetry sensors reporting live data stream.
+            `;
+        }
+
+        // Chatbot Form Handler
+        function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const chatBox = document.getElementById('chatBox');
+
+            // Append User Question
+            chatBox.innerHTML += `
+                <div class="flex gap-3 justify-end">
+                    <div class="bg-emerald-600 text-slate-950 font-semibold p-3 rounded-2xl rounded-tr-none max-w-xl">
+                        ${text}
+                    </div>
+                </div>
+            `;
+
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Simulate Bot Response
+            setTimeout(() => {
+                let botAnswer = "Based on our pathology database, I recommend maintaining optimal crop row ventilation and applying an organic Trichoderma foliar spray every 7 days.";
+                if (text.toLowerCase().includes('tomato') || text.toLowerCase().includes('blight')) {
+                    botAnswer = "Tomato Late Blight spreads rapidly under high humidity (>85%). Apply Copper Oxychloride immediately and ensure bottom leaf clearance to prevent soil spore splash.";
+                } else if (text.toLowerCase().includes('dosage')) {
+                    botAnswer = "Standard chemical application dosage is 2.5 grams per Liter of water. Ensure uniform coverage on both top and bottom leaf surfaces.";
+                }
+
+                chatBox.innerHTML += `
+                    <div class="flex gap-3">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl rounded-tl-none max-w-xl text-slate-200 leading-relaxed">
+                            ${botAnswer}
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1000);
+        }
+
+        // Export PDF / Print Report Routine
+        function exportPDFReport() {
+            window.print();
+        }
+
+        // Initialize Yield Chart with Chart.js
+        window.addEventListener('load', () => {
+            const ctx = document.getElementById('yieldChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Protected Yield', 'Infection Loss Risk'],
+                    datasets: [{
+                        data: [78, 22],
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '75%'
+                }
+            });
+        });
+    </script>
+</body>
+</html>
