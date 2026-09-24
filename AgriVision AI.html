@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
+            lightMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -21,7 +21,7 @@
                             500: '#10b981',
                             600: '#059669',
                             900: '#064e3b',
-                            950: '#022c22'
+                            950: '#00FF00'
                         },
                         agro: {
                             dark: '#030d09',
@@ -55,13 +55,13 @@
     </script>
     <style>
         body {
-            background-color: #030d09;
+            background-color: #00FF00;
             color: #e2e8f0;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             overflow-x: hidden;
         }
         .glass-panel {
-            background: rgba(6, 26, 19, 0.7);
+            background: rgba(0.255.0);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(52, 211, 153, 0.18);
@@ -75,7 +75,7 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #030d09;
+            background: #00FF00;
         }
         ::-webkit-scrollbar-thumb {
             background: #059669;
