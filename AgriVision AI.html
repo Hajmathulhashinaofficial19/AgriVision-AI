@@ -811,6 +811,11 @@
                 } else if (text.toLowerCase().includes('dosage')) {
                     botAnswer = "Standard chemical application dosage is 2.5 grams per Liter of water. Ensure uniform coverage on both top and bottom leaf surfaces.";
                 }
+                if (text.toLowerCase().includes('apple') || text.toLowerCase().includes('black')) {
+                    botAnswer = "Remove and destroy infected fruits and branches. Prune the tree to improve air circulation. Keep the area around the tree clean. Use an approved organic copper or sulfur fungicide as directed on the label. Avoid overwatering and keep leaves dry when possible.";
+                } else if (text.toLowerCase().includes('dosage')) {
+                    botAnswer = "Standard chemical application dosage is 2.5 grams per Liter of water. Ensure uniform coverage on both top and bottom leaf surfaces.";
+                }
 
                 chatBox.innerHTML += `
                     <div class="flex gap-3">
