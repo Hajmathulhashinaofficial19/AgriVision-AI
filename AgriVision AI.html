@@ -806,7 +806,7 @@
             // Simulate Bot Response
             setTimeout(() => {
                 let botAnswer = "Based on our pathology database, I recommend maintaining optimal crop row ventilation and applying an organic Trichoderma foliar spray every 7 days.";
-                if (text.toLowerCase().includes('tomato') || text.toLowerCase().includes('blight')) {
+                if (text.toLowerCase().includes('tomato') || text.toLowerCase().includes('late blight')) {
                     botAnswer = "Tomato Late Blight spreads rapidly under high humidity (>85%). Apply Copper Oxychloride immediately and ensure bottom leaf clearance to prevent soil spore splash.";
                 } else if (text.toLowerCase().includes('dosage')) {
                     botAnswer = "Standard chemical application dosage is 2.5 grams per Liter of water. Ensure uniform coverage on both top and bottom leaf surfaces.";
@@ -814,8 +814,20 @@
                 if (text.toLowerCase().includes('apple') || text.toLowerCase().includes('black')) {
                     botAnswer = "Remove and destroy infected fruits and branches. Prune the tree to improve air circulation. Keep the area around the tree clean. Use an approved organic copper or sulfur fungicide as directed on the label. Avoid overwatering and keep leaves dry when possible.";
                 } else if (text.toLowerCase().includes('dosage')) {
-                    botAnswer = "Standard chemical application dosage is 2.5 grams per Liter of water. Ensure uniform coverage on both top and bottom leaf surfaces.";
+                    botAnswer = "Remove infected parts and spray approved organic copper fungicide as per label.";
                 }
+                 if (text.toLowerCase().includes('corn') || text.toLowerCase().includes('leaf blight')) {
+                    botAnswer = "Remove and destroy infected leaves. Keep the field clean of plant debris. Ensure good spacing and air circulation. Use neem oil spray as a natural preventive measure. Use resistant corn varieties when possible. Avoid excessive watering.";
+                } else if (text.toLowerCase().includes('dosage')) {
+                    botAnswer = "Spray neem oil at 3–5 ml/L of water.";
+                }
+                 if (text.toLowerCase().includes('cotton') || text.toLowerCase().includes('healthy')) {
+                    botAnswer = "Congratulations! Your crop is healthy. No action required. Maintain it carefully as you already did.";
+                } else if (text.toLowerCase().includes('dosage')) {
+                    botAnswer = "Healthy cotton plants generally show a chlorophyll level of *40–50 SPAD units*, indicating good leaf health and sufficient photosynthetic activity.";
+                }
+
+
 
                 chatBox.innerHTML += `
                     <div class="flex gap-3">
